@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRUD con JSON y Bootstrap</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container mt-5">
+    <h1 class="mb-4">Gestión de Tareas</h1>
+    <div id="crud-app"></div>
+  </div>
+  <script src="logic.js"></script>
+  <script>
+    // Renderizar formulario y tabla
+    function render() {
+      let items = window.crud.readItems();
+      // Priorizar 'urgente' sobre 'normal' en el listado
+      items = items.sort((a, b) => {
+        if (a.prioridad === b.prioridad) return 0;
+        if (a.prioridad?.toLowerCase() === 'urgente') return -1;
+        if (b.prioridad?.toLowerCase() === 'urgente') return 1;
+        return 0;
+      });
+      const app = document.getElementById('crud-app');
+      app.innerHTML = `
+        <form id="crud-form" class="mb-4" novalidate>
+          <div class="row g-2 mb-3">
+            <div class="col-md-3">
+              <input type="text" class="form-control" id="nombre" placeholder="Nombre" required>
+            </div>
+            <div class="col-md-4">
+              <input type="text" class="form-control" id="descripcion" placeholder="Descripción" required>
+            </div>
+            <div class="col-md-3">
+              <select class="form-control" id="prioridad" required>
+                <option value="" disabled selected>Cola de prioridad</option>
+                <option value="urgente">Urgente</option>
+                <option value="normal">Normal</option>
+              </select>
+            </div>
+            <div class="col-md-2 d-grid">
+              <button type="submit" class="btn btn-primary">Agregar</button>
+            </div>
+          </div>
+        </form>
+        <div class="mb-3">
+          <input type="number" class="form-control" id="filtro-id" placeholder="Filtrar por ID">
+        </div>
+        <table class="table table-bordered table-striped">
+          <thead class="table-dark">
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th>Acciones</th>
+              <th>Cola de prioridad</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-tbody">
+            ${items.map((item, idx) => `
+              <tr>
+                <td>${item.id}</td>
+                <td>${item.nombre}</td>
+                <td>${item.descripcion}</td>
+                <td>
+                  <button class="btn btn-sm btn-warning me-2" onclick="editItem(${item.id})">Editar</button>
+                  <button class="btn btn-sm btn-danger" onclick="deleteItem(${item.id})">Eliminar</button>
+                </td>
+                <td>${item.prioridad ?? ''}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+      document.getElementById('crud-form').onsubmit = function(e) {
+        e.preventDefault();
+        const nombre = document.getElementById('nombre').value.trim();
+        const descripcion = document.getElementById('descripcion').value.trim();
+        const prioridad = document.getElementById('prioridad').value;
+        if (nombre && descripcion && prioridad) {
+          window.crud.createItem({ nombre, descripcion, prioridad });
+          render();
+          this.reset();
+        }
+      };
+      // Filtro por ID
+      document.getElementById('filtro-id').oninput = function() {
+        const filtro = this.value.trim();
+        let filtrados = items;
+        if (filtro) {
+          filtrados = items.filter(item => item.id.toString().includes(filtro));
+        }
+        const tbody = document.getElementById('tabla-tbody');
+        tbody.innerHTML = filtrados.map(item => `
+          <tr>
+            <td>${item.id}</td>
+            <td>${item.nombre}</td>
+            <td>${item.descripcion}</td>
+            <td>
+              <button class="btn btn-sm btn-warning me-2" onclick="editItem(${item.id})">Editar</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteItem(${item.id})">Eliminar</button>
+            </td>
+            <td>${item.prioridad ?? ''}</td>
+          </tr>
+        `).join('');
+      };
+    }
+
+    // Editar elemento
+    window.editItem = function(id) {
+      const items = window.crud.readItems();
+      const item = items.find(i => i.id === id);
+      if (!item) return;
+      const nombre = prompt('Nuevo nombre:', item.nombre);
+      const descripcion = prompt('Nueva descripción:', item.descripcion);
+      const prioridad = prompt('Nueva cola de prioridad (urgente/normal):', item.prioridad ?? '');
+      if (nombre !== null && descripcion !== null && prioridad !== null) {
+        window.crud.updateItem(id, { nombre, descripcion, prioridad });
+        render();
+      }
+    };
+
+    // Eliminar elemento
+    window.deleteItem = function(id) {
+      if (confirm('¿Seguro que deseas eliminar este elemento?')) {
+        window.crud.deleteItem(id);
+        render();
+      }
+    };
+
+    // Inicializar
+    render();
+  </script>
+</body>
+</html>
