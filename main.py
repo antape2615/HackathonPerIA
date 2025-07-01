@@ -6,7 +6,7 @@ tareas = []
 def mostrar_tareas():
     for t in tareas:
         estado = '✓' if t['completada'] else '✗'
-        print(f"[{estado}] {t['descripcion']} | ID: {t['id']} | Prioridad: {t['prioridad']}")
+        print(f"[{estado}] {t['description']} | ID: {t['id']} | Prioridad: {t['prioridad']}")
 
 def guardar():
     with open("tareas.json", "w") as f:
