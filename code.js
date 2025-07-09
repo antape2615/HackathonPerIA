@@ -1,146 +1,114 @@
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
-const PriorityQueue = require('js-priority-queue');
 
 const TAREAS_FILE = path.join(__dirname, 'tareas.json');
 
-// Clase Tarea
 class Tarea {
-    constructor(id, descripcion, prioridad = 'normal') {
-        this.id = id;
-        this.descripcion = descripcion;
-        this.prioridad = prioridad;
-        this.completada = false;
-    }
+  constructor(id, descripcion, prioridad = 'normal') {
+    this.id = id;
+    this.descripcion = descripcion;
+    this.prioridad = prioridad;
+    this.completada = false;
+  }
 }
 
-// Clase GestorTareas
 class GestorTareas {
-    constructor() {
-        this.siguienteId = 1;
-        this.tareasMap = new Map();
+  constructor() {
+    this.siguienteId = 1;
+    this.tareasMap = new Map();
+    this.cargarDesdeArchivo();
+  }
 
-        this.queue = new PriorityQueue({
-            comparator: (a, b) => {
-                if (a.prioridad === b.prioridad) return a.id - b.id;
-                return a.prioridad === 'urgente' ? -1 : 1;
-            }
-        });
-
-        this.cargarDesdeArchivo();
+  validarPrioridad(prioridad) {
+    const prioridadesValidas = ['urgente', 'normal'];
+    if (!prioridadesValidas.includes(prioridad)) {
+      throw new Error(`Prioridad inválida. Solo puede ser: ${prioridadesValidas.join(', ')}`);
     }
+  }
 
-    guardarEnArchivo() {
-        const tareasArray = Array.from(this.tareasMap.values());
-        fs.writeFileSync(TAREAS_FILE, JSON.stringify(tareasArray, null, 2));
-    }
+  guardarEnArchivo() {
+    const tareasArray = Array.from(this.tareasMap.values());
+    fs.writeFileSync(TAREAS_FILE, JSON.stringify(tareasArray, null, 2));
+  }
 
-    cargarDesdeArchivo() {
-        if (fs.existsSync(TAREAS_FILE)) {
-            const data = fs.readFileSync(TAREAS_FILE, 'utf8');
-            const tareas = JSON.parse(data);
-
-            tareas.forEach(t => {
-                const tarea = new Tarea(t.id, t.descripcion, t.prioridad);
-                tarea.completada = t.completada;
-                this.queue.queue(tarea);
-                this.tareasMap.set(tarea.id, tarea);
-            });
-
-            if (tareas.length > 0) {
-                this.siguienteId = Math.max(...tareas.map(t => t.id)) + 1;
-            }
-        }
-    }
-
-    crearTarea(descripcion, prioridad) {
-        const tarea = new Tarea(this.siguienteId++, descripcion, prioridad);
-        this.queue.queue(tarea);
+  cargarDesdeArchivo() {
+    if (fs.existsSync(TAREAS_FILE)) {
+      const data = fs.readFileSync(TAREAS_FILE, 'utf8');
+      const tareas = JSON.parse(data);
+      tareas.forEach(t => {
+        const tarea = new Tarea(t.id, t.descripcion, t.prioridad);
+        tarea.completada = t.completada;
         this.tareasMap.set(tarea.id, tarea);
-        this.guardarEnArchivo();
-        console.log("✅ Tarea creada con ID:", tarea.id);
+      });
+      if (tareas.length > 0) {
+        this.siguienteId = Math.max(...tareas.map(t => t.id)) + 1;
+      }
     }
+  }
 
-    completarTarea(id) {
-        const tarea = this.tareasMap.get(id);
-        if (tarea) {
-            tarea.completada = true;
-            this.guardarEnArchivo();
-            console.log("✅ Tarea completada:", tarea.descripcion);
-        } else {
-            console.log("❌ Tarea no encontrada.");
-        }
+  crearTarea(descripcion, prioridad) {
+    try {
+      this.validarPrioridad(prioridad);
+    } catch (error) {
+      console.log('Error:', error.message);
+      return;
     }
+    const tarea = new Tarea(this.siguienteId++, descripcion, prioridad);
+    this.tareasMap.set(tarea.id, tarea);
+    this.guardarEnArchivo();
+    console.log("Tarea creada con ID:", tarea.id);
+  }
 
-    eliminarTarea(id) {
-        if (!this.tareasMap.has(id)) {
-            console.log("❌ Tarea no encontrada.");
-            return;
-        }
-
-        const nuevaCola = new PriorityQueue({
-            comparator: this.queue.comparator
-        });
-
-        for (const tarea of this.queue.array) {
-            if (tarea.id !== id) {
-                nuevaCola.queue(tarea);
-            }
-        }
-
-        this.queue = nuevaCola;
-        this.tareasMap.delete(id);
-        this.guardarEnArchivo();
-        console.log("🗑️ Tarea eliminada.");
+  completarTarea(id) {
+    const tarea = this.tareasMap.get(id);
+    if (tarea) {
+      tarea.completada = true;
+      this.guardarEnArchivo();
+      console.log("Tarea completada:", tarea.descripcion);
+    } else {
+      console.log("Tarea no encontrada.");
     }
+  }
 
-    buscarPorId(id) {
-        return this.tareasMap.get(id);
+  eliminarTarea(id) {
+    if (this.tareasMap.delete(id)) {
+      this.guardarEnArchivo();
+      console.log("Tarea eliminada.");
+    } else {
+      console.log("Tarea no encontrada.");
     }
+  }
 
-    filtrarPorPrioridad(prioridad) {
-        return this.queue.array.filter(t => t.prioridad === prioridad);
-    }
-
-mostrarTareas() {
+  mostrarTareas() {
     if (this.tareasMap.size === 0) {
-        console.log("📭 No hay tareas.");
-        return;
+      console.log("No hay tareas.");
+      return;
     }
-
-    console.log("\n📋 Lista de tareas:");
+    console.log("\nLista de tareas:");
     for (const tarea of this.tareasMap.values()) {
-        console.log(`#${tarea.id} | ${tarea.descripcion} | Prioridad: ${tarea.prioridad} | Completada: ${tarea.completada ? 'Sí' : 'No'}`);
+      console.log(`#${tarea.id} | ${tarea.descripcion} | Prioridad: ${tarea.prioridad} | Completada: ${tarea.completada ? 'Sí' : 'No'}`);
     }
-}
+  }
 
-filtrarPorPrioridad(prioridad) {
+  buscarPorId(id) {
+    return this.tareasMap.get(id);
+  }
+
+  filtrarPorPrioridad(prioridad) {
     return Array.from(this.tareasMap.values()).filter(t => t.prioridad === prioridad);
+  }
 }
 
-    obtenerSiguienteTarea() {
-        if (this.queue.length === 0) {
-            console.log("📭 No hay tareas en la cola.");
-            return;
-        }
-
-        const tarea = this.queue.dequeue();
-        this.tareasMap.delete(tarea.id);
-        this.guardarEnArchivo();
-        console.log(`🚀 Siguiente tarea: #${tarea.id} - ${tarea.descripcion}`);
-    }
-}
-
-// CLI Interfaz
 const gestor = new GestorTareas();
+
 const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
+  input: process.stdin,
+  output: process.stdout
 });
 
-function mostrarMenu() {
-    console.log(`
+function menu() {
+  console.log(`
 --- MENÚ DE TAREAS ---
 1. Crear tarea
 2. Completar tarea
@@ -148,78 +116,109 @@ function mostrarMenu() {
 4. Ver todas las tareas
 5. Buscar tarea por ID
 6. Filtrar por prioridad
-7. Obtener siguiente tarea (urgente primero)
 0. Salir
-`);
+  `);
+  rl.question('Elige una opción: ', opcion => {
+    switch(opcion.trim()) {
+      case '1':
+        crearTareaPrompt();
+        break;
+      case '2':
+        completarTareaPrompt();
+        break;
+      case '3':
+        eliminarTareaPrompt();
+        break;
+      case '4':
+        gestor.mostrarTareas();
+        menu();
+        break;
+      case '5':
+        buscarTareaPrompt();
+        break;
+      case '6':
+        filtrarPrioridadPrompt();
+        break;
+      case '0':
+        console.log('¡Hasta luego!');
+        rl.close();
+        break;
+      default:
+        console.log('Opción inválida.');
+        menu();
+    }
+  });
 }
 
-function esperarEntrada() {
-    mostrarMenu();
-    rl.question("Elige una opción: ", opcion => {
-        switch (opcion.trim()) {
-            case '1':
-                rl.question("Descripción de la tarea: ", desc => {
-                    rl.question("Prioridad (urgente/normal): ", prioridad => {
-                        const p = prioridad.toLowerCase() === 'urgente' ? 'urgente' : 'normal';
-                        gestor.crearTarea(desc.trim(), p);
-                        esperarEntrada();
-                    });
-                });
-                break;
-            case '2':
-                rl.question("ID de la tarea a completar: ", id => {
-                    gestor.completarTarea(parseInt(id));
-                    esperarEntrada();
-                });
-                break;
-            case '3':
-                rl.question("ID de la tarea a eliminar: ", id => {
-                    gestor.eliminarTarea(parseInt(id));
-                    esperarEntrada();
-                });
-                break;
-            case '4':
-                gestor.mostrarTareas();
-                esperarEntrada();
-                break;
-            case '5':
-                rl.question("ID de la tarea a buscar: ", id => {
-                    const tarea = gestor.buscarPorId(parseInt(id));
-                    if (tarea) {
-                        console.log(`📌 Tarea encontrada: ${tarea.descripcion} | Prioridad: ${tarea.prioridad} | Completada: ${tarea.completada ? 'Sí' : 'No'}`);
-                    } else {
-                        console.log("❌ Tarea no encontrada.");
-                    }
-                    esperarEntrada();
-                });
-                break;
-            case '6':
-                rl.question("Filtrar por prioridad (urgente/normal): ", prioridad => {
-                    const filtradas = gestor.filtrarPorPrioridad(prioridad.toLowerCase());
-                    console.log(`\n🎯 Tareas con prioridad "${prioridad}":`);
-                    filtradas.forEach(t => {
-                        console.log(`#${t.id} | ${t.descripcion} | Completada: ${t.completada ? 'Sí' : 'No'}`);
-                    });
-                    esperarEntrada();
-                });
-                break;
-            case '7':
-                gestor.obtenerSiguienteTarea();
-                esperarEntrada();
-                break;
-            case '0':
-                console.log("👋 ¡Hasta luego!");
-                rl.close();
-                break;
-            default:
-                console.log("❗ Opción inválida.");
-                esperarEntrada();
-        }
+function crearTareaPrompt() {
+  rl.question('Descripción de la tarea: ', desc => {
+    rl.question('Prioridad ("urgente" o "normal"): ', prioridad => {
+      gestor.crearTarea(desc.trim(), prioridad.trim().toLowerCase());
+      menu();
     });
+  });
 }
 
+function completarTareaPrompt() {
+  rl.question('ID de la tarea a completar: ', id => {
+    const idNum = Number(id);
+    if (isNaN(idNum)) {
+      console.log('ID inválido.');
+      return menu();
+    }
+    gestor.completarTarea(idNum);
+    menu();
+  });
+}
 
+function eliminarTareaPrompt() {
+  rl.question('ID de la tarea a eliminar: ', id => {
+    const idNum = Number(id);
+    if (isNaN(idNum)) {
+      console.log('ID inválido.');
+      return menu();
+    }
+    gestor.eliminarTarea(idNum);
+    menu();
+  });
+}
 
+function buscarTareaPrompt() {
+  rl.question('ID de la tarea a buscar: ', id => {
+    const idNum = Number(id);
+    if (isNaN(idNum)) {
+      console.log('ID inválido.');
+      return menu();
+    }
+    const tarea = gestor.buscarPorId(idNum);
+    if (tarea) {
+      console.log(`#${tarea.id} | ${tarea.descripcion} | Prioridad: ${tarea.prioridad} | Completada: ${tarea.completada ? 'Sí' : 'No'}`);
+    } else {
+      console.log('Tarea no encontrada.');
+    }
+    menu();
+  });
+}
 
-// Iniciar programa
-esperarEntrada();
+function filtrarPrioridadPrompt() {
+  rl.question('Filtrar por prioridad ("urgente" o "normal"): ', prioridad => {
+    const p = prioridad.trim().toLowerCase();
+    if (p !== 'urgente' && p !== 'normal') {
+      console.log('Prioridad inválida.');
+      return menu();
+    }
+    const tareas = gestor.filtrarPorPrioridad(p);
+    if (tareas.length === 0) {
+      console.log(`No hay tareas con prioridad "${p}".`);
+    } else {
+      console.log(`Tareas con prioridad "${p}":`);
+      tareas.forEach(t => {
+        console.log(`#${t.id} | ${t.descripcion} | Completada: ${t.completada ? 'Sí' : 'No'}`);
+      });
+    }
+    menu();
+  });
+}
+
+// Inicia la app
+menu();
