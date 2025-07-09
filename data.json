@@ -1,0 +1,20 @@
+[
+    {
+        "id": 1,
+        "descripcion": "tarea desayunar",
+        "estado": false,
+        "prioridad": "urgente"
+    },
+    {
+        "id": 2,
+        "descripcion": "almorzar",
+        "estado": false,
+        "prioridad": "normal"
+    },
+    {
+        "id": 3,
+        "descripcion": "cenar",
+        "estado": false,
+        "prioridad": "normal"
+    }
+]
