@@ -28,5 +28,11 @@
     "descripcion": "345",
     "prioridad": "urgente",
     "completada": false
+  },
+  {
+    "id": 6,
+    "descripcion": "Tarea 333",
+    "prioridad": "normal",
+    "completada": false
   }
 ]
