@@ -218,5 +218,8 @@ function esperarEntrada() {
     });
 }
 
+
+
+
 // Iniciar programa
 esperarEntrada();

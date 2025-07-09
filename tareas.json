@@ -9,6 +9,12 @@
     "id": 2,
     "descripcion": "test005",
     "prioridad": "urgente",
+    "completada": true
+  },
+  {
+    "id": 3,
+    "descripcion": "Tareas 007 test",
+    "prioridad": "normal",
     "completada": false
   }
 ]
