@@ -1,4 +1,5 @@
 const readline = require('readline');
+const PriorityQueue = require('js-priority-queue');
 
 // Clase Tarea
 class Tarea {
@@ -10,22 +11,32 @@ class Tarea {
     }
 }
 
-// Clase Gestor de Tareas
+// Clase GestorTareas con cola de prioridad
 class GestorTareas {
     constructor() {
-        this.tareas = [];
         this.siguienteId = 1;
+
+        this.queue = new PriorityQueue({
+            comparator: (a, b) => {
+                if (a.prioridad === b.prioridad) {
+                    return a.id - b.id; // ordenar por orden de creación si misma prioridad
+                }
+                return a.prioridad === 'urgente' ? -1 : 1;
+            }
+        });
+
+        this.tareasMap = new Map(); // Para búsqueda/eliminación por ID
     }
 
     crearTarea(descripcion, prioridad) {
-        const nuevaTarea = new Tarea(this.siguienteId++, descripcion, prioridad);
-        this.tareas.push(nuevaTarea);
-        this.ordenarPorPrioridad();
-        console.log("✅ Tarea creada con ID:", nuevaTarea.id);
+        const tarea = new Tarea(this.siguienteId++, descripcion, prioridad);
+        this.queue.queue(tarea);
+        this.tareasMap.set(tarea.id, tarea);
+        console.log("✅ Tarea creada con ID:", tarea.id);
     }
 
     completarTarea(id) {
-        const tarea = this.buscarPorId(id);
+        const tarea = this.tareasMap.get(id);
         if (tarea) {
             tarea.completada = true;
             console.log("✅ Tarea completada:", tarea.descripcion);
@@ -35,44 +46,59 @@ class GestorTareas {
     }
 
     eliminarTarea(id) {
-        const indice = this.tareas.findIndex(t => t.id === id);
-        if (indice !== -1) {
-            console.log("🗑️ Tarea eliminada:", this.tareas[indice].descripcion);
-            this.tareas.splice(indice, 1);
-        } else {
+        if (!this.tareasMap.has(id)) {
             console.log("❌ Tarea no encontrada.");
+            return;
         }
+
+        const nuevaCola = new PriorityQueue({
+            comparator: this.queue.comparator
+        });
+
+        for (const tarea of this.queue.array) {
+            if (tarea.id !== id) {
+                nuevaCola.queue(tarea);
+            }
+        }
+
+        this.queue = nuevaCola;
+        this.tareasMap.delete(id);
+        console.log("🗑️ Tarea eliminada.");
     }
 
     buscarPorId(id) {
-        return this.tareas.find(t => t.id === id);
+        return this.tareasMap.get(id);
     }
 
     filtrarPorPrioridad(prioridad) {
-        return this.tareas.filter(t => t.prioridad === prioridad);
-    }
-
-    ordenarPorPrioridad() {
-        this.tareas.sort((a, b) => {
-            if (a.prioridad === 'urgente' && b.prioridad === 'normal') return -1;
-            if (a.prioridad === 'normal' && b.prioridad === 'urgente') return 1;
-            return 0;
-        });
+        return this.queue.array.filter(t => t.prioridad === prioridad);
     }
 
     mostrarTareas() {
-        if (this.tareas.length === 0) {
+        if (this.queue.length === 0) {
             console.log("📭 No hay tareas.");
-        } else {
-            console.log("\n📋 Lista de tareas:");
-            this.tareas.forEach(t => {
-                console.log(`#${t.id} | ${t.descripcion} | Prioridad: ${t.prioridad} | Completada: ${t.completada ? 'Sí' : 'No'}`);
-            });
+            return;
         }
+
+        console.log("\n📋 Lista de tareas:");
+        for (const tarea of this.queue.array) {
+            console.log(`#${tarea.id} | ${tarea.descripcion} | Prioridad: ${tarea.prioridad} | Completada: ${tarea.completada ? 'Sí' : 'No'}`);
+        }
+    }
+
+    obtenerSiguienteTarea() {
+        if (this.queue.length === 0) {
+            console.log("📭 No hay tareas en la cola.");
+            return;
+        }
+
+        const tarea = this.queue.dequeue();
+        this.tareasMap.delete(tarea.id);
+        console.log(`🚀 Siguiente tarea: #${tarea.id} - ${tarea.descripcion}`);
     }
 }
 
-// Interfaz de consola
+// CLI
 const gestor = new GestorTareas();
 const rl = readline.createInterface({
     input: process.stdin,
@@ -88,6 +114,7 @@ function mostrarMenu() {
 4. Ver todas las tareas
 5. Buscar tarea por ID
 6. Filtrar por prioridad
+7. Obtener siguiente tarea (urgente primero)
 0. Salir
 `);
 }
@@ -95,11 +122,12 @@ function mostrarMenu() {
 function esperarEntrada() {
     mostrarMenu();
     rl.question("Elige una opción: ", opcion => {
-        switch (opcion) {
+        switch (opcion.trim()) {
             case '1':
                 rl.question("Descripción de la tarea: ", desc => {
                     rl.question("Prioridad (urgente/normal): ", prioridad => {
-                        gestor.crearTarea(desc, prioridad.toLowerCase() === 'urgente' ? 'urgente' : 'normal');
+                        const p = prioridad.toLowerCase() === 'urgente' ? 'urgente' : 'normal';
+                        gestor.crearTarea(desc.trim(), p);
                         esperarEntrada();
                     });
                 });
@@ -126,7 +154,7 @@ function esperarEntrada() {
                     if (tarea) {
                         console.log(`📌 Tarea encontrada: ${tarea.descripcion} | Prioridad: ${tarea.prioridad} | Completada: ${tarea.completada ? 'Sí' : 'No'}`);
                     } else {
-                        console.log("❌ No se encontró la tarea.");
+                        console.log("❌ Tarea no encontrada.");
                     }
                     esperarEntrada();
                 });
@@ -141,6 +169,10 @@ function esperarEntrada() {
                     esperarEntrada();
                 });
                 break;
+            case '7':
+                gestor.obtenerSiguienteTarea();
+                esperarEntrada();
+                break;
             case '0':
                 console.log("👋 ¡Hasta luego!");
                 rl.close();
@@ -152,5 +184,5 @@ function esperarEntrada() {
     });
 }
 
-// Iniciar aplicación
+// Iniciar
 esperarEntrada();
