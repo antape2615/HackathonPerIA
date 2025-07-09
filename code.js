@@ -1,5 +1,9 @@
+const fs = require('fs');
+const path = require('path');
 const readline = require('readline');
 const PriorityQueue = require('js-priority-queue');
+
+const TAREAS_FILE = path.join(__dirname, 'tareas.json');
 
 // Clase Tarea
 class Tarea {
@@ -11,27 +15,50 @@ class Tarea {
     }
 }
 
-// Clase GestorTareas con cola de prioridad
+// Clase GestorTareas
 class GestorTareas {
     constructor() {
         this.siguienteId = 1;
+        this.tareasMap = new Map();
 
         this.queue = new PriorityQueue({
             comparator: (a, b) => {
-                if (a.prioridad === b.prioridad) {
-                    return a.id - b.id; // ordenar por orden de creación si misma prioridad
-                }
+                if (a.prioridad === b.prioridad) return a.id - b.id;
                 return a.prioridad === 'urgente' ? -1 : 1;
             }
         });
 
-        this.tareasMap = new Map(); // Para búsqueda/eliminación por ID
+        this.cargarDesdeArchivo();
+    }
+
+    guardarEnArchivo() {
+        const tareasArray = Array.from(this.tareasMap.values());
+        fs.writeFileSync(TAREAS_FILE, JSON.stringify(tareasArray, null, 2));
+    }
+
+    cargarDesdeArchivo() {
+        if (fs.existsSync(TAREAS_FILE)) {
+            const data = fs.readFileSync(TAREAS_FILE, 'utf8');
+            const tareas = JSON.parse(data);
+
+            tareas.forEach(t => {
+                const tarea = new Tarea(t.id, t.descripcion, t.prioridad);
+                tarea.completada = t.completada;
+                this.queue.queue(tarea);
+                this.tareasMap.set(tarea.id, tarea);
+            });
+
+            if (tareas.length > 0) {
+                this.siguienteId = Math.max(...tareas.map(t => t.id)) + 1;
+            }
+        }
     }
 
     crearTarea(descripcion, prioridad) {
         const tarea = new Tarea(this.siguienteId++, descripcion, prioridad);
         this.queue.queue(tarea);
         this.tareasMap.set(tarea.id, tarea);
+        this.guardarEnArchivo();
         console.log("✅ Tarea creada con ID:", tarea.id);
     }
 
@@ -39,6 +66,7 @@ class GestorTareas {
         const tarea = this.tareasMap.get(id);
         if (tarea) {
             tarea.completada = true;
+            this.guardarEnArchivo();
             console.log("✅ Tarea completada:", tarea.descripcion);
         } else {
             console.log("❌ Tarea no encontrada.");
@@ -63,6 +91,7 @@ class GestorTareas {
 
         this.queue = nuevaCola;
         this.tareasMap.delete(id);
+        this.guardarEnArchivo();
         console.log("🗑️ Tarea eliminada.");
     }
 
@@ -94,11 +123,12 @@ class GestorTareas {
 
         const tarea = this.queue.dequeue();
         this.tareasMap.delete(tarea.id);
+        this.guardarEnArchivo();
         console.log(`🚀 Siguiente tarea: #${tarea.id} - ${tarea.descripcion}`);
     }
 }
 
-// CLI
+// CLI Interfaz
 const gestor = new GestorTareas();
 const rl = readline.createInterface({
     input: process.stdin,
@@ -184,5 +214,5 @@ function esperarEntrada() {
     });
 }
 
-// Iniciar
+// Iniciar programa
 esperarEntrada();
