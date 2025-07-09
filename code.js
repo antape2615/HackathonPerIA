@@ -103,17 +103,21 @@ class GestorTareas {
         return this.queue.array.filter(t => t.prioridad === prioridad);
     }
 
-    mostrarTareas() {
-        if (this.queue.length === 0) {
-            console.log("📭 No hay tareas.");
-            return;
-        }
-
-        console.log("\n📋 Lista de tareas:");
-        for (const tarea of this.queue.array) {
-            console.log(`#${tarea.id} | ${tarea.descripcion} | Prioridad: ${tarea.prioridad} | Completada: ${tarea.completada ? 'Sí' : 'No'}`);
-        }
+mostrarTareas() {
+    if (this.tareasMap.size === 0) {
+        console.log("📭 No hay tareas.");
+        return;
     }
+
+    console.log("\n📋 Lista de tareas:");
+    for (const tarea of this.tareasMap.values()) {
+        console.log(`#${tarea.id} | ${tarea.descripcion} | Prioridad: ${tarea.prioridad} | Completada: ${tarea.completada ? 'Sí' : 'No'}`);
+    }
+}
+
+filtrarPorPrioridad(prioridad) {
+    return Array.from(this.tareasMap.values()).filter(t => t.prioridad === prioridad);
+}
 
     obtenerSiguienteTarea() {
         if (this.queue.length === 0) {
