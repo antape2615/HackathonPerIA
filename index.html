@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Tareas</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Gestión de Tareas</h1>
+
+    <form id="form-tarea">
+        <input type="text" id="tarea-nombre" placeholder="Nueva tarea" required>
+        <select id="prioridad">
+            <option value="baja">Baja</option>
+            <option value="media">Media</option>
+            <option value="alta">Alta</option>
+        </select>
+        <button type="submit">Agregar Tarea</button>
+    </form>
+
+    <h2>Tareas asignadas:</h2>
+    <ul id="lista-tareas">
+        <!-- Aquí se agregarán las tareas -->
+    </ul>
+
+    <script src="app.js"></script>
+</body>
+</html>
