@@ -31,6 +31,7 @@ La solución convierte el diagnóstico de dolores empresariales en un flujo conv
    - API de Groq (LLaMA 3) para procesamiento de lenguaje natural
    - Análisis inteligente de información empresarial
    - Generación automática de reportes estructurados
+   
 
 4. **Representación de tres enfoques de solución**:
    - **Corto plazo** (0-3 meses): Quick wins inmediatos
