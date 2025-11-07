@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: periscan-backend
+    env_file:
+      - ./backend/.env
+    ports:
+      - "3003:3003"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: periscan-frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3003
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+
+networks:
+  default:
+    name: periscan-network

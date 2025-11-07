@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  company   String?
+  industry  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assessments Assessment[]
+  sessions    Session[]
+
+  @@map("users")
+}
+
+model Assessment {
+  id          String   @id @default(uuid())
+  userId      String
+  title       String
+  status      AssessmentStatus @default(DRAFT)
+  responses   Json
+  analysis    Json?
+  painPoints  Json?
+  solutions   Json?
+  analytics   Json?
+  recommendations Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions Session[]
+
+  @@map("assessments")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  assessmentId String
+  userId       String
+  type         SessionType
+  messages     Json
+  aiAnalysis   Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+enum AssessmentStatus {
+  DRAFT
+  IN_PROGRESS
+  COMPLETED
+  ANALYZED
+}
+
+enum SessionType {
+  CHAT
+  ASSESSMENT
+  ANALYSIS
+}
+
+enum SolutionTimeline {
+  SHORT_TERM
+  MEDIUM_TERM
+  LONG_TERM
+}

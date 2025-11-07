@@ -1,0 +1,26 @@
+{
+  "name": "periscan-ai",
+  "version": "1.0.0",
+  "description": "Assessment Express potenciado con IA - Tech Battle Latam 2025",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd backend && npm run dev",
+    "client": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "start": "cd backend && npm start",
+    "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "setup": "chmod +x scripts/setup.sh && ./scripts/setup.sh",
+    "migrate": "cd backend && npm run migrate",
+    "seed": "cd backend && npm run seed",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "keywords": ["ai", "assessment", "periscan", "tech-battle"],
+  "author": "Jhonatan Ruiz",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
