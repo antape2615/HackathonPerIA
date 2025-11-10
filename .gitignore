@@ -2,3 +2,8 @@
 *.sh
 *.gitignore
 *.md
+inicializar_git.sh
+inicializar_git.ps1
+push_cambios.sh
+push_cambios.ps1
+log.txt
