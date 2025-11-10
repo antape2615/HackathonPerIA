@@ -1,7 +1,6 @@
 *.txt
 *.sh
 *.gitignore
-*.md
 inicializar_git.sh
 push_cambios.sh
 log.txt
