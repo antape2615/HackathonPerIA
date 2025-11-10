@@ -3,7 +3,12 @@
 *.gitignore
 *.md
 inicializar_git.sh
-inicializar_git.ps1
 push_cambios.sh
-push_cambios.ps1
 log.txt
+
+# Asegurar que los directorios node_modules NO sean ignorados por Git
+# Esto re-incluye cualquier carpeta llamada "node_modules" en cualquier nivel
+!node_modules/
+!node_modules/**
+!**/node_modules/
+!**/node_modules/**
