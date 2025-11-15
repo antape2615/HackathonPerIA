@@ -1,0 +1,182 @@
+// Prisma Schema for Tech Battle Latam 2025
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  EVALUATOR
+  CANDIDATE
+}
+
+enum ProgrammingLanguage {
+  JAVASCRIPT
+  TYPESCRIPT
+  PYTHON
+  JAVA
+  GO
+  CSHARP
+  RUBY
+  CPP
+  C
+  PHP
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum TestSessionStatus {
+  IN_PROGRESS
+  COMPLETED
+  EXPIRED
+  ABANDONED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  role      UserRole @default(CANDIDATE)
+
+  createdTests  Test[]
+  testSessions  TestSession[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Test {
+  id          String              @id @default(uuid())
+  title       String
+  description String
+  language    ProgrammingLanguage
+  framework   String
+  difficulty  Difficulty
+  duration    Int                 // minutos
+  isActive    Boolean             @default(true)
+
+  questions Question[]
+  sessions  TestSession[]
+
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tests")
+}
+
+model Question {
+  id          String @id @default(uuid())
+  title       String
+  description String @db.Text
+  starterCode String @db.Text
+  points      Int    @default(10)
+  order       Int    @default(0)
+
+  testId String
+  test   Test   @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  testCases TestCase[]
+  answers   Answer[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("questions")
+}
+
+model TestCase {
+  id             String  @id @default(uuid())
+  input          String  @db.Text
+  expectedOutput String  @db.Text
+  isHidden       Boolean @default(false)
+  order          Int     @default(0)
+
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("test_cases")
+}
+
+model TestSession {
+  id          String            @id @default(uuid())
+  status      TestSessionStatus @default(IN_PROGRESS)
+  startedAt   DateTime          @default(now())
+  completedAt DateTime?
+  expiresAt   DateTime
+
+  testId String
+  test   Test   @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  candidateId String
+  candidate   User   @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  answers    Answer[]
+  evaluation Evaluation?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("test_sessions")
+}
+
+model Answer {
+  id              String  @id @default(uuid())
+  code            String  @db.Text
+  executionResult Json?   // Resultados de test cases
+  score           Int?
+  aiAnalysis      String? @db.Text
+
+  sessionId String
+  session   TestSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([sessionId, questionId])
+  @@map("answers")
+}
+
+model Evaluation {
+  id                  String  @id @default(uuid())
+  totalScore          Float
+  totalPoints         Int
+  passedTestCases     Int
+  totalTestCases      Int
+  codeQualityScore    Float
+  bestPracticesScore  Float
+  efficiencyScore     Float
+  score               Float
+  aiFeedback          String  @db.Text
+  strengths           Json    // Array de strings
+  weaknesses          Json    // Array de strings
+  recommendations     Json    // Array de strings
+  detailedAnalysis    Json?   // Análisis por pregunta
+
+  sessionId String      @unique
+  session   TestSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("evaluations")
+}

@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-techbattle
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: techbattle
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - techbattle-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d techbattle']
+      interval: 3s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend-techbattle
+    restart: unless-stopped
+    ports:
+      - '4000:4000'
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/techbattle
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      GROQ_API_KEY: ${GROQ_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - techbattle-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:4000/api
+    container_name: frontend-techbattle
+    restart: unless-stopped
+    ports:
+      - '3001:80'
+    depends_on:
+      - backend
+    networks:
+      - techbattle-network
+
+volumes:
+  postgres_data:
+
+networks:
+  techbattle-network:
+    driver: bridge

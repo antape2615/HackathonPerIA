@@ -1,0 +1,23 @@
+{
+  "name": "tech-battle-latam-2025",
+  "private": true,
+  "scripts": {
+    "install:all": "npm run install:frontend && npm run install:backend",
+    "install:frontend": "npm --prefix frontend install",
+    "install:backend": "npm --prefix backend install",
+
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run start:dev",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+
+    "build:frontend": "npm --prefix frontend run build",
+    "build:backend": "npm --prefix backend run build",
+    "build": "npm run build:frontend && npm run build:backend"
+  },
+  "dependencies": {
+    "groq-sdk": "^0.35.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
