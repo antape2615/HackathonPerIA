@@ -1,6 +1,6 @@
 # 📘 **TestIA Backend**
 
-TestIA Backend es un servicio construido con **Spring Boot 3**, **Java 17**, **MongoDB**, y **OpenAI GPT-5.1** para generar, asignar y evaluar pruebas técnicas de programación con IA.
+TestIA Backend es un servicio construido con **Spring Boot 3**, **Java 17**, **MongoDB**, y **GROQ** para generar, asignar y evaluar pruebas técnicas de programación con IA.
 
 Incluye:
 
@@ -22,7 +22,7 @@ Antes de ejecutar el backend necesitas:
 | Java           | **17**              |
 | Maven          | **3.9+**            |
 | MongoDB        | Local o Atlas       |
-| OpenAI API Key | Gratuita / oficial  |
+| GROQ API Key   | Gratuita / oficial  |
 | IDE            | IntelliJ / VSCode   |
 
 ---
@@ -32,7 +32,7 @@ Antes de ejecutar el backend necesitas:
 ### 1️⃣ **Clonar el repo**
 
 ```bash
-git clone https://github.com/tu-org/testia-backend.git
+git clone https://github.com/org(Change-this)/testia-backend.git
 cd testia-backend
 ```
 
@@ -41,11 +41,11 @@ cd testia-backend
 Crea un archivo `.env` en la raíz:
 
 ```
-OPENAI_API_KEY=your_free_or_paid_key_here
+GROQ_API_KEY=your_free_or_paid_key_here
 JWT_SECRET=your_jwt_secret_here
 ```
 
-> 🔥 **Sí, puedes usar claves gratuitas de OpenAI.**
+> 🔥 **Hint => Sí, puedes usar claves gratuitas de OpenAI.**
 
 ### 3️⃣ **Configurar MongoDB (si usas local)**
 
@@ -162,7 +162,7 @@ Archivo: **`.env.example`**
 JWT_SECRET=changeme123
 
 # OpenAI settings
-OPENAI_API_KEY=your_key_here
+GROQ_API_KEY=your_key_here
 OPENAI_MODEL=gpt-5.1
 
 # MongoDB
@@ -170,7 +170,7 @@ SPRING_DATA_MONGODB_URI=mongodb://localhost:27017/testia
 SPRING_DATA_MONGODB_DATABASE=testia
 SPRING_DATA_MONGODB_UUID_REPRESENTATION=standard
 ```
-
+Igual el .env lo subi a la solucion.
 ---
 
 # ⚙️ **CI/CD — GitHub Actions**
@@ -214,7 +214,7 @@ jobs:
         run: mvn -B -e -ntp package
 ```
 
-✔️ Valida que compila
+✔️ Valida compilacion
 ✔️ Cachea dependencias
 ✔️ Compatible con Java 17
 
@@ -266,5 +266,5 @@ Si necesitas ayuda o tienes problemas al ejecutar:
 
 1. Verifica MongoDB
 2. Revisa que `.env` existe
-3. Confirma tu OpenAI key
+3. Confirma tu GroqApi key
 4. Asegura que usas Java 17
