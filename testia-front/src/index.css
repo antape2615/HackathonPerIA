@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 220 15% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 15%;
+    --primary: 216 89% 52%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 216 65% 40%;
+    --secondary-foreground: 0 0% 100%;
+    --tertiary: 280 60% 58%;
+    --tertiary-foreground: 0 0% 100%;
+    --muted: 220 14% 90%;
+    --muted-foreground: 220 12% 28%;
+    --accent: 216 89% 52%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 145 55% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 40 90% 52%;
+    --warning-foreground: 220 15% 15%;
+    --border: 220 14% 90%;
+    --input: 220 14% 90%;
+    --ring: 216 89% 52%;
+    --radius: 12px;
+  }
+
+  .dark {
+    --background: 220 20% 10%;
+    --foreground: 0 0% 98%;
+    --card: 220 16% 18%;
+    --card-foreground: 0 0% 98%;
+    --popover: 220 16% 18%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 216 89% 52%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 216 65% 40%;
+    --secondary-foreground: 0 0% 100%;
+    --tertiary: 280 60% 58%;
+    --tertiary-foreground: 0 0% 100%;
+    --muted: 220 12% 28%;
+    --muted-foreground: 220 14% 90%;
+    --accent: 216 89% 52%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 145 55% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 40 90% 52%;
+    --warning-foreground: 220 15% 15%;
+    --border: 220 12% 28%;
+    --input: 220 12% 28%;
+    --ring: 216 89% 52%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html,
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
