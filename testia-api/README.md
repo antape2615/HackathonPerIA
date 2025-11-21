@@ -388,3 +388,6 @@ https://frontend-url/take-test/{assignmentId}
 ```
 
 ---
+Datos Usados para realizar el workflow de la aplicacion.
+
+<img width="986" height="663" alt="image" src="https://github.com/user-attachments/assets/60b76044-6f98-4e76-b2d1-1560f1cab463" />
