@@ -259,12 +259,3 @@ Arquitectura usada:
 ✔️ **Repositorios por dominio**
 
 ---
-
-# 💬 Soporte
-
-Si necesitas ayuda o tienes problemas al ejecutar:
-
-1. Verifica MongoDB
-2. Revisa que `.env` existe
-3. Confirma tu GroqApi key
-4. Asegura que usas Java 17
